@@ -21,7 +21,7 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
 <body>
 <div class="app">
   <div id="home" class="screen active">
-    <div class="top"><div style="display:flex;align-items:center;gap:12px"><img src="icon.svg" alt="DD13 HOME" style="width:48px;height:48px;border-radius:12px"><div><div class="title">Számláim</div><div class="sub" id="monthLabel"></div></div></div></div>
+    <div class="top"><div style="display:flex;align-items:center;gap:12px"><img src="icon.svg" alt="DD13 HOME" style="width:48px;height:48px;border-radius:12px"><div><div class="title">Számláim <span style="font-size:10px;color:#888">v8</span></div><div class="sub" id="monthLabel"></div></div></div></div>
     <div class="summary"><div class="sub">Ebben a hónapban</div><div class="big" id="total">0 Ft</div>
       <div class="miniSummary"><div class="miniCard"><span class="sub">2026 éves összesítés</span><b id="yearTotal">0 Ft</b></div><div class="miniCard"><span class="sub">Kategóriák</span><b id="catCount">4</b></div></div><div class="stats"><div class="stat"><b id="count">0</b><span>számla</span></div><div class="stat"><b id="paidCount">0</b><span>fizetve</span></div><div class="stat"><b id="openCount">0</b><span>nyitott</span></div></div>
     </div>
@@ -50,7 +50,7 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
 
   <div id="add" class="screen">
     <div class="top"><button class="back" onclick="show('category')">‹ Vissza</button><div class="title" style="font-size:23px">Új számla</div></div>
-    <form onsubmit="saveBill(event)">
+    <form autocomplete="off" onsubmit="saveBill(event)">
       <div class="field"><label>Kategória</label><select id="fcat" onchange="toggleTmobile()"><option value="rezsi">🏠 Otthoni rezsi</option><option value="tmobile">📱 T-Mobile</option><option value="auto">🚗 Autó</option><option value="motor">🏍️ Motor</option></select></div>
       <div class="field"><label>Szolgáltató / megnevezés</label><input id="fname" placeholder="pl. MVM, Telekom, szerviz"></div>
       <div class="field"><label>Teljes számla összege</label><input id="famount" type="number" min="0" step="1" placeholder="Ft" required></div>
@@ -70,7 +70,7 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
   </div>
 </div>
 <script>
-const KEY='szamlak_v2'; let bills=JSON.parse(localStorage.getItem(KEY)||'[]'); let current='rezsi';
+const KEY='szamlak_v2'; const APP_VERSION='v8'; let bills=JSON.parse(localStorage.getItem(KEY)||'[]'); let current='rezsi';
 const names={rezsi:'🏠 Otthoni rezsi',tmobile:'📱 T-Mobile',auto:'🚗 Autó',motor:'🏍️ Motor'};
 const fmt=n=>new Intl.NumberFormat('hu-HU').format(Math.round(Number(n)||0))+' Ft';
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active'); if(id==='home')renderHome();}
@@ -132,10 +132,10 @@ function renderCategory(){
  document.getElementById('catExtra').innerHTML=extra;
  document.getElementById('billList').innerHTML=arr.length?arr.slice().reverse().map(b=>`<div class="bill"><div class="row"><div><div class="amount">${fmt(b.amount)}</div>${Number(b.share||b.amount)!==Number(b.amount)?`<div class="sub" style="margin-top:4px"><b>Mi részünk: ${fmt(b.share)}</b></div>`:''}<div class="sub" style="margin-top:6px">${esc(b.name||'Számla')} · ${b.due||'Nincs határidő'}</div></div><span class="pill ${b.paid?'paid':'due'}">${b.paid?'Fizetve':'Nincs fizetve'}</span></div>${b.device?`<div class="sub" style="margin-top:9px">📱 ${esc(b.device)} · ${b.remaining||0} részlet hátra</div>`:''}${b.photo?`<img src="${b.photo}" style="width:100%;max-height:180px;object-fit:contain;margin-top:12px;border-radius:12px">`:''}</div>`).join(''):'<div class="sub">Még nincs felvitt számla.</div>';
 }
-function showAdd(){show('add');document.getElementById('fcat').value=current;toggleTmobile();document.getElementById('fdue').value=new Date().toISOString().slice(0,10);}
+function showAdd(){show('add'); const cat=document.getElementById('fcat'); cat.value=current; toggleTmobile(); document.getElementById('fdue').value=new Date().toISOString().slice(0,10); document.getElementById('fname').value=''; document.getElementById('famount').value=''; document.getElementById('fshare').value=''; document.getElementById('fpaid').value='no'; document.getElementById('fdevice').value=''; document.getElementById('finstallment').value=''; document.getElementById('fremaining').value=''; document.getElementById('fnote').value=''; document.getElementById('fphoto').value=''; document.getElementById('preview').innerHTML='';}
 function toggleTmobile(){let t=document.getElementById('fcat').value==='tmobile';document.getElementById('tmobileFields').style.display=t?'block':'none';document.getElementById('shareField').style.display=t?'none':'flex';}
 document.getElementById('fphoto').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>document.getElementById('preview').innerHTML='<img src="'+r.result+'">';r.readAsDataURL(f);});
-function saveBill(e){e.preventDefault();let photo=document.getElementById('fphoto').files[0];let finish=src=>{bills.push({cat:fcat.value,name:fname.value,amount:Number(famount.value),share:fshare.value?Number(fshare.value):Number(famount.value),due:fdue.value,paid:fpaid.value==='yes',device:fdevice.value,installment:Number(finstallment.value||0),remaining:Number(fremaining.value||0),note:fnote.value,photo:src||'',date:new Date().toISOString()});localStorage.setItem(KEY,JSON.stringify(bills));openCategory(fcat.value);};if(photo){let r=new FileReader();r.onload=()=>finish(r.result);r.readAsDataURL(photo)}else finish('');}
+function saveBill(e){e.preventDefault(); const cat=document.getElementById('fcat').value; const name=document.getElementById('fname').value.trim(); const amount=Number(document.getElementById('famount').value||0); const shareRaw=document.getElementById('fshare').value; const share=shareRaw!==''?Number(shareRaw):amount; const due=document.getElementById('fdue').value; const paid=document.getElementById('fpaid').value==='yes'; const device=document.getElementById('fdevice').value.trim(); const installment=Number(document.getElementById('finstallment').value||0); const remaining=Number(document.getElementById('fremaining').value||0); const note=document.getElementById('fnote').value.trim(); const photoInput=document.getElementById('fphoto'); const photo=photoInput.files && photoInput.files[0]; const finish=src=>{bills.push({cat,name,amount,share,due,paid,device,installment,remaining,note,photo:src||'',date:new Date().toISOString()}); localStorage.setItem(KEY,JSON.stringify(bills)); current=cat; openCategory(cat);}; if(photo){const r=new FileReader(); r.onload=()=>finish(r.result); r.readAsDataURL(photo);} else finish('');}
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 renderHome();
 </script>
