@@ -50,18 +50,18 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
 
   <div id="add" class="screen">
     <div class="top"><button class="back" onclick="show('category')">‹ Vissza</button><div class="title" style="font-size:23px">Új számla</div></div>
-    <form autocomplete="new-password" onsubmit="saveBill(event)">
+    <form autocomplete="off" onsubmit="saveBill(event)">
       <div class="field"><label>Kategória</label><select id="fcat" onchange="toggleTmobile()"><option value="rezsi">🏠 Otthoni rezsi</option><option value="tmobile">📱 T-Mobile</option><option value="auto">🚗 Autó</option><option value="motor">🏍️ Motor</option></select></div>
-      <div class="field"><label>Szolgáltató / megnevezés</label><input id="fname" name="dd13_name" autocomplete="new-password" placeholder="pl. MVM, Telekom, szerviz"></div>
-      <div class="field"><label>Teljes számla összege</label><input id="famount" name="dd13_amount" autocomplete="new-password" type="number" min="0" step="1" placeholder="Ft" required></div>
-      <div id="shareField" class="field"><label>Mi részünk (közös számla esetén)</label><input id="fshare" name="dd13_share" autocomplete="new-password" type="number" min="0" step="1" placeholder="Ha üres, a teljes összeg"></div>
+      <div class="field"><label>Szolgáltató / megnevezés</label><input id="fname" placeholder="pl. MVM, Telekom, szerviz"></div>
+      <div class="field"><label>Teljes számla összege</label><input id="famount" type="number" min="0" step="1" placeholder="Ft" required></div>
+      <div id="shareField" class="field"><label>Mi részünk (közös számla esetén)</label><input id="fshare" type="number" min="0" step="1" placeholder="Ha üres, a teljes összeg"></div>
       <div class="field"><label>Fizetési határidő</label><input id="fdue" type="date"></div>
       <div class="field"><label>Fizetve?</label><select id="fpaid"><option value="no">Nem</option><option value="yes">Igen</option></select></div>
       <div id="tmobileFields" style="display:none">
         <div class="section">Telefon részletek</div>
-        <div class="field"><label>Készülék</label><input id="fdevice" name="dd13_device" autocomplete="new-password" placeholder="pl. iPhone"></div>
-        <div class="field"><label>Havi részlet</label><input id="finstallment" name="dd13_installment" autocomplete="new-password" type="number" min="0" step="1" placeholder="Ft"></div>
-        <div class="field"><label>Hátralévő részletek</label><input id="fremaining" name="dd13_remaining" autocomplete="new-password" type="number" min="0" step="1" placeholder="db"></div>
+        <div class="field"><label>Készülék</label><input id="fdevice" placeholder="pl. iPhone"></div>
+        <div class="field"><label>Havi részlet</label><input id="finstallment" type="number" min="0" step="1" placeholder="Ft"></div>
+        <div class="field"><label>Hátralévő részletek</label><input id="fremaining" type="number" min="0" step="1" placeholder="db"></div>
       </div>
       <div class="field"><label>Számla fotója</label><div class="photo"><input id="fphoto" type="file" accept="image/*" capture="environment"><div id="preview"></div></div></div>
       <div class="field"><label>Megjegyzés</label><textarea id="fnote" placeholder="Opcionális"></textarea></div>
@@ -70,35 +70,73 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
   </div>
 </div>
 <script>
-const KEY='szamlak_v2';
-const DB_NAME='dd13_home_db';
-const DB_VERSION=1;
-const STORE='bills';
-let bills=[]; let current='rezsi'; let db=null;
+const KEY='szamlak_v2'; const APP_VERSION='v8'; let bills=JSON.parse(localStorage.getItem(KEY)||'[]'); let current='rezsi';
 const names={rezsi:'🏠 Otthoni rezsi',tmobile:'📱 T-Mobile',auto:'🚗 Autó',motor:'🏍️ Motor'};
 const fmt=n=>new Intl.NumberFormat('hu-HU').format(Math.round(Number(n)||0))+' Ft';
-function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); const el=document.getElementById(id); if(el) el.classList.add('active'); if(id==='home')renderHome();}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active'); if(id==='home')renderHome();}
 function openCategory(c){current=c;show('category');renderCategory();}
-function billValue(b){return Number(b.share||b.amount||0)}
-function billDate(b){const d=new Date(b.due||b.date); return isNaN(d)?new Date():d}
-function openDB(){return new Promise((resolve,reject)=>{if(!('indexedDB' in window)){resolve(null);return;} const r=indexedDB.open(DB_NAME,DB_VERSION); r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});}; r.onsuccess=()=>resolve(r.result); r.onerror=()=>reject(r.error);});}
-function idbGetAll(){return new Promise((resolve,reject)=>{if(!db){resolve([]);return;} const tx=db.transaction(STORE,'readonly'),st=tx.objectStore(STORE),r=st.getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});}
-function idbAdd(item){return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite'),st=tx.objectStore(STORE),r=st.add(item);r.onsuccess=()=>{item.id=r.result;resolve(item)};r.onerror=()=>reject(r.error);});}
-async function initData(){
- try{db=await openDB(); if(db){let existing=await idbGetAll(); if(!existing.length){let old=[]; try{old=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){old=[]} if(Array.isArray(old)&&old.length){const tx=db.transaction(STORE,'readwrite'),st=tx.objectStore(STORE); old.forEach(x=>st.add(x)); await new Promise(res=>tx.oncomplete=res); existing=await idbGetAll();} bills=existing;}else bills=existing;}
- }catch(e){db=null; try{bills=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(x){bills=[]}}
- renderHome();
+
+function showHistory(){
+ show('history');
+ const years=[...new Set(bills.map(b=>billDate(b).getFullYear()))].sort((a,b)=>b-a);
+ const now=new Date().getFullYear();
+ if(!years.includes(now)) years.unshift(now);
+ document.getElementById('historyYear').innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
+ renderHistory();
 }
-function showHistory(){show('history');const years=[...new Set(bills.map(b=>billDate(b).getFullYear()))].sort((a,b)=>b-a);const now=new Date().getFullYear();if(!years.includes(now))years.unshift(now);document.getElementById('historyYear').innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');renderHistory();}
-function renderHistory(){const y=Number(document.getElementById('historyYear').value);const arr=bills.filter(b=>billDate(b).getFullYear()===y);const total=arr.reduce((s,b)=>s+billValue(b),0);document.getElementById('historySummary').innerHTML=`<div class="miniCard"><span class="sub">${y}. évi összesen</span><b>${fmt(total)}</b></div><div class="miniCard"><span class="sub">Számlák</span><b>${arr.length}</b></div>`;const months=Array.from({length:12},(_,m)=>arr.filter(b=>billDate(b).getMonth()===m));document.getElementById('historyList').innerHTML=months.map((a,m)=>{const sum=a.reduce((s,b)=>s+billValue(b),0);return `<div class="bill"><div class="row"><b>${new Date(y,m,1).toLocaleDateString('hu-HU',{month:'long'})}</b><b>${fmt(sum)}</b></div><div class="sub" style="margin-top:7px">${a.length} számla</div></div>`}).join('');}
-function renderHome(){const now=new Date(),m=now.getMonth(),y=now.getFullYear();document.getElementById('monthLabel').textContent=now.toLocaleDateString('hu-HU',{year:'numeric',month:'long'});const month=bills.filter(b=>{let d=billDate(b);return d.getMonth()===m&&d.getFullYear()===y});const year=bills.filter(b=>billDate(b).getFullYear()===y);const total=month.reduce((s,b)=>s+billValue(b),0),yt=year.reduce((s,b)=>s+billValue(b),0);document.getElementById('total').textContent=fmt(total);document.getElementById('yearTotal').textContent=fmt(yt);document.getElementById('count').textContent=month.length;document.getElementById('paidCount').textContent=month.filter(b=>b.paid).length;document.getElementById('openCount').textContent=month.filter(b=>!b.paid).length;document.getElementById('catCount').textContent=Object.keys(names).length;Object.keys(names).forEach(c=>{const mt=month.filter(b=>b.cat===c).reduce((s,b)=>s+billValue(b),0);const el=document.getElementById('tile-'+c);if(el)el.textContent=mt?'Havi: '+fmt(mt):'Havi: 0 Ft';});}
-function renderCategory(){const now=new Date(),m=now.getMonth(),y=now.getFullYear();document.getElementById('catTitle').textContent=names[current];const arr=bills.filter(b=>b.cat===current);const month=arr.filter(b=>{let d=billDate(b);return d.getMonth()===m&&d.getFullYear()===y});const year=arr.filter(b=>billDate(b).getFullYear()===y);const mt=month.reduce((s,b)=>s+billValue(b),0),yt=year.reduce((s,b)=>s+billValue(b),0);document.getElementById('catSummary').innerHTML=`<div class="miniCard"><span class="sub">${now.toLocaleDateString('hu-HU',{month:'long'})} költés</span><b>${fmt(mt)}</b></div><div class="miniCard"><span class="sub">${y}. évi összesítés</span><b>${fmt(yt)}</b></div>`;let extra='';if(current==='tmobile')extra='<div class="detail"><div class="detailline"><span>Telefon</span><b>'+fmt(arr.reduce((s,b)=>s+Number(b.amount||0),0))+'</b></div><div class="detailline"><span>Részletfizetés</span><span>A számlákhoz menthető</span></div></div>';document.getElementById('catExtra').innerHTML=extra;document.getElementById('billList').innerHTML=arr.length?arr.slice().reverse().map(b=>`<div class="bill"><div class="row"><div><div class="amount">${fmt(b.amount)}</div>${Number(b.share||b.amount)!==Number(b.amount)?`<div class="sub" style="margin-top:4px"><b>Mi részünk: ${fmt(b.share)}</b></div>`:''}<div class="sub" style="margin-top:6px">${esc(b.name||'Számla')} · ${b.due||'Nincs határidő'}</div></div><span class="pill ${b.paid?'paid':'due'}">${b.paid?'Fizetve':'Nincs fizetve'}</span></div>${b.device?`<div class="sub" style="margin-top:9px">📱 ${esc(b.device)} · ${b.remaining||0} részlet hátra</div>`:''}${b.photo?`<img src="${b.photo}" style="width:100%;max-height:180px;object-fit:contain;margin-top:12px;border-radius:12px">`:''}</div>`).join(''):'<div class="sub">Még nincs felvitt számla.</div>';}
-function clearAddForm(){const form=document.querySelector('#add form');if(form)form.reset();document.getElementById('fshare').value='';document.getElementById('fpaid').value='no';document.getElementById('fdue').value=new Date().toISOString().slice(0,10);document.getElementById('tmobileFields').style.display='none';document.getElementById('shareField').style.display='flex';document.getElementById('preview').innerHTML='';}
-function showAdd(){show('add');clearAddForm();document.getElementById('fcat').value=current;toggleTmobile();setTimeout(()=>document.getElementById('fname').focus(),50);}
-function toggleTmobile(){const t=document.getElementById('fcat').value==='tmobile';document.getElementById('tmobileFields').style.display=t?'block':'none';document.getElementById('shareField').style.display=t?'none':'flex';}
+function renderHistory(){
+ const y=Number(document.getElementById('historyYear').value);
+ const arr=bills.filter(b=>billDate(b).getFullYear()===y);
+ const total=arr.reduce((s,b)=>s+billValue(b),0);
+ document.getElementById('historySummary').innerHTML=
+   `<div class="miniCard"><span class="sub">${y}. évi összesen</span><b>${fmt(total)}</b></div>
+    <div class="miniCard"><span class="sub">Számlák</span><b>${arr.length}</b></div>`;
+ const months=Array.from({length:12},(_,m)=>arr.filter(b=>billDate(b).getMonth()===m));
+ document.getElementById('historyList').innerHTML=months.map((a,m)=>{
+   const sum=a.reduce((s,b)=>s+billValue(b),0);
+   return `<div class="bill"><div class="row"><b>${new Date(y,m,1).toLocaleDateString('hu-HU',{month:'long'})}</b><b>${fmt(sum)}</b></div><div class="sub" style="margin-top:7px">${a.length} számla</div></div>`;
+ }).join('');
+}
+
+function billValue(b){return Number(b.share||b.amount||0)}
+function billDate(b){return new Date(b.due||b.date)}
+function renderHome(){
+ const now=new Date(), m=now.getMonth(), y=now.getFullYear();
+ document.getElementById('monthLabel').textContent=now.toLocaleDateString('hu-HU',{year:'numeric',month:'long'});
+ const month=bills.filter(b=>{let d=billDate(b);return d.getMonth()===m&&d.getFullYear()===y});
+ const year=bills.filter(b=>billDate(b).getFullYear()===y);
+ const total=month.reduce((s,b)=>s+billValue(b),0), yt=year.reduce((s,b)=>s+billValue(b),0);
+ document.getElementById('total').textContent=fmt(total);
+ document.getElementById('yearTotal').textContent=fmt(yt);
+ document.getElementById('count').textContent=month.length;
+ document.getElementById('paidCount').textContent=month.filter(b=>b.paid).length;
+ document.getElementById('openCount').textContent=month.filter(b=>!b.paid).length;
+ document.getElementById('catCount').textContent=Object.keys(names).length;
+ Object.keys(names).forEach(c=>{
+   const mt=month.filter(b=>b.cat===c).reduce((s,b)=>s+billValue(b),0);
+   const el=document.getElementById('tile-'+c); if(el) el.textContent=mt?('Havi: '+fmt(mt)):'Havi: 0 Ft';
+ });
+}
+function renderCategory(){
+ const now=new Date(),m=now.getMonth(),y=now.getFullYear();
+ document.getElementById('catTitle').textContent=names[current];
+ const arr=bills.filter(b=>b.cat===current);
+ const month=arr.filter(b=>{let d=billDate(b);return d.getMonth()===m&&d.getFullYear()===y});
+ const year=arr.filter(b=>billDate(b).getFullYear()===y);
+ const mt=month.reduce((s,b)=>s+billValue(b),0), yt=year.reduce((s,b)=>s+billValue(b),0);
+ document.getElementById('catSummary').innerHTML=
+   `<div class="miniCard"><span class="sub">${now.toLocaleDateString('hu-HU',{month:'long'})} költés</span><b>${fmt(mt)}</b></div>
+    <div class="miniCard"><span class="sub">${y}. évi összesítés</span><b>${fmt(yt)}</b></div>`;
+ let extra='';
+ if(current==='tmobile') extra='<div class="detail"><div class="detailline"><span>Telefon</span><b>'+fmt(arr.reduce((s,b)=>s+Number(b.amount||0),0))+'</b></div><div class="detailline"><span>Részletfizetés</span><span>A számlákhoz menthető</span></div></div>';
+ document.getElementById('catExtra').innerHTML=extra;
+ document.getElementById('billList').innerHTML=arr.length?arr.slice().reverse().map(b=>`<div class="bill"><div class="row"><div><div class="amount">${fmt(b.amount)}</div>${Number(b.share||b.amount)!==Number(b.amount)?`<div class="sub" style="margin-top:4px"><b>Mi részünk: ${fmt(b.share)}</b></div>`:''}<div class="sub" style="margin-top:6px">${esc(b.name||'Számla')} · ${b.due||'Nincs határidő'}</div></div><span class="pill ${b.paid?'paid':'due'}">${b.paid?'Fizetve':'Nincs fizetve'}</span></div>${b.device?`<div class="sub" style="margin-top:9px">📱 ${esc(b.device)} · ${b.remaining||0} részlet hátra</div>`:''}${b.photo?`<img src="${b.photo}" style="width:100%;max-height:180px;object-fit:contain;margin-top:12px;border-radius:12px">`:''}</div>`).join(''):'<div class="sub">Még nincs felvitt számla.</div>';
+}
+function showAdd(){show('add'); const cat=document.getElementById('fcat'); cat.value=current; toggleTmobile(); document.getElementById('fdue').value=new Date().toISOString().slice(0,10); document.getElementById('fname').value=''; document.getElementById('famount').value=''; document.getElementById('fshare').value=''; document.getElementById('fpaid').value='no'; document.getElementById('fdevice').value=''; document.getElementById('finstallment').value=''; document.getElementById('fremaining').value=''; document.getElementById('fnote').value=''; document.getElementById('fphoto').value=''; document.getElementById('preview').innerHTML='';}
+function toggleTmobile(){let t=document.getElementById('fcat').value==='tmobile';document.getElementById('tmobileFields').style.display=t?'block':'none';document.getElementById('shareField').style.display=t?'none':'flex';}
 document.getElementById('fphoto').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>document.getElementById('preview').innerHTML='<img src="'+r.result+'">';r.readAsDataURL(f);});
-async function saveBill(e){e.preventDefault();if(!db&& !('localStorage' in window)){alert('A mentés nem érhető el ezen az eszközön.');return;}const cat=document.getElementById('fcat').value;const name=document.getElementById('fname').value.trim();const amount=Number(document.getElementById('famount').value||0);if(!amount){alert('Írd be a számla összegét.');document.getElementById('famount').focus();return;}const shareRaw=document.getElementById('fshare').value;const share=shareRaw!==''?Number(shareRaw):amount;const due=document.getElementById('fdue').value;const paid=document.getElementById('fpaid').value==='yes';const device=document.getElementById('fdevice').value.trim();const installment=Number(document.getElementById('finstallment').value||0);const remaining=Number(document.getElementById('fremaining').value||0);const note=document.getElementById('fnote').value.trim();const photoInput=document.getElementById('fphoto');const photo=photoInput.files&&photoInput.files[0];const finish=async src=>{const item={cat,name,amount,share,due,paid,device,installment,remaining,note,photo:src||'',date:new Date().toISOString()};try{if(db){const saved=await idbAdd(item);bills.push(saved);}else{bills.push(item);try{localStorage.setItem(KEY,JSON.stringify(bills));}catch(err){bills.pop();alert('A böngésző tárhelye megtelt. A számla nem lett elmentve.');return;}}current=cat;openCategory(cat);}catch(err){alert('A számla mentése nem sikerült. Próbáld újra.');}};if(photo){const r=new FileReader();r.onload=()=>finish(r.result);r.onerror=()=>finish('');r.readAsDataURL(photo);}else await finish('');}
+function saveBill(e){e.preventDefault(); const cat=document.getElementById('fcat').value; const name=document.getElementById('fname').value.trim(); const amount=Number(document.getElementById('famount').value||0); const shareRaw=document.getElementById('fshare').value; const share=shareRaw!==''?Number(shareRaw):amount; const due=document.getElementById('fdue').value; const paid=document.getElementById('fpaid').value==='yes'; const device=document.getElementById('fdevice').value.trim(); const installment=Number(document.getElementById('finstallment').value||0); const remaining=Number(document.getElementById('fremaining').value||0); const note=document.getElementById('fnote').value.trim(); const photoInput=document.getElementById('fphoto'); const photo=photoInput.files && photoInput.files[0]; const finish=src=>{bills.push({cat,name,amount,share,due,paid,device,installment,remaining,note,photo:src||'',date:new Date().toISOString()}); localStorage.setItem(KEY,JSON.stringify(bills)); current=cat; openCategory(cat);}; if(photo){const r=new FileReader(); r.onload=()=>finish(r.result); r.readAsDataURL(photo);} else finish('');}
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
-initData();
+renderHome();
 </script>
 </body></html>
