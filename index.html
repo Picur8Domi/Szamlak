@@ -8,8 +8,8 @@
 <style>
 :root{--bg:#101214;--card:#191c20;--card2:#20242a;--text:#f4f5f6;--muted:#9da4ad;--accent:#d9b36c;--ok:#78c58a;--danger:#e27d7d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
-.app{max-width:520px;margin:auto;padding:18px 16px 90px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.title{font-size:30px;font-weight:750}.sub{color:var(--muted);font-size:14px;margin-top:3px}.summary{background:linear-gradient(135deg,#24282e,#171a1e);border:1px solid #30353c;border-radius:24px;padding:20px;margin-bottom:18px}.summary .big{font-size:34px;font-weight:800;margin:6px 0}.stats{display:flex;gap:8px}.stat{flex:1;background:#11131699;border-radius:15px;padding:11px}.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{border:1px solid #30343a;background:var(--card);border-radius:22px;padding:18px;min-height:138px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}.ico{font-size:32px}.tile b{display:block;font-size:17px;line-height:1.2;margin-bottom:7px}.tile span{display:block;font-size:12px;line-height:1.35;color:var(--muted)}
+.app{max-width:520px;margin:auto;padding:18px 16px 90px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.title{font-size:30px;font-weight:750}.sub{color:var(--muted);font-size:14px;margin-top:3px}.miniSummary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}.miniCard{background:var(--card);border:1px solid #30343a;border-radius:18px;padding:14px}.miniCard b{display:block;font-size:20px;margin-top:5px}.summary{background:linear-gradient(135deg,#24282e,#171a1e);border:1px solid #30353c;border-radius:24px;padding:20px;margin-bottom:18px}.summary .big{font-size:34px;font-weight:800;margin:6px 0}.stats{display:flex;gap:8px}.stat{flex:1;background:#11131699;border-radius:15px;padding:11px}.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{border:1px solid #30343a;background:var(--card);border-radius:22px;padding:18px;min-height:138px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}.ico{font-size:32px}.tile b{display:block;font-size:17px;line-height:1.2;margin-bottom:7px}.tileTotal{display:block;font-size:13px;margin-top:9px;color:var(--accent)}.tile span{display:block;font-size:12px;line-height:1.35;color:var(--muted)}
 .back{background:var(--card);border:1px solid #30343a;color:var(--text);border-radius:12px;padding:9px 12px}.row{display:flex;justify-content:space-between;align-items:center}.list{display:flex;flex-direction:column;gap:10px}.bill{background:var(--card);border:1px solid #30343a;border-radius:18px;padding:15px}.bill .amount{font-size:21px;font-weight:750}.pill{font-size:11px;border-radius:99px;padding:5px 8px;background:#2a3035;color:var(--muted)}.paid{background:#203526;color:var(--ok)}.due{background:#3a2929;color:#ffb1b1}
 button{font:inherit}.fab{position:fixed;right:20px;bottom:22px;width:58px;height:58px;border:0;border-radius:50%;background:var(--accent);color:#151515;font-size:30px;box-shadow:0 8px 25px #0008}.screen{display:none}.screen.active{display:block}
 form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:var(--muted)}input,select,textarea{width:100%;padding:13px;border-radius:13px;border:1px solid #363b42;background:#15181b;color:var(--text);font:inherit}textarea{min-height:80px}.primary{padding:14px;border:0;border-radius:14px;background:var(--accent);color:#171717;font-weight:750}.secondary{padding:13px;border:1px solid #3a3f46;border-radius:14px;background:var(--card);color:var(--text)}
@@ -23,17 +23,24 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
   <div id="home" class="screen active">
     <div class="top"><div style="display:flex;align-items:center;gap:12px"><img src="icon.svg" alt="DD13 HOME" style="width:48px;height:48px;border-radius:12px"><div><div class="title">Számláim</div><div class="sub" id="monthLabel"></div></div></div></div>
     <div class="summary"><div class="sub">Ebben a hónapban</div><div class="big" id="total">0 Ft</div>
-      <div class="stats"><div class="stat"><b id="count">0</b><span>számla</span></div><div class="stat"><b id="paidCount">0</b><span>fizetve</span></div><div class="stat"><b id="openCount">0</b><span>nyitott</span></div></div>
+      <div class="miniSummary"><div class="miniCard"><span class="sub">2026 éves összesítés</span><b id="yearTotal">0 Ft</b></div><div class="miniCard"><span class="sub">Kategóriák</span><b id="catCount">4</b></div></div><div class="stats"><div class="stat"><b id="count">0</b><span>számla</span></div><div class="stat"><b id="paidCount">0</b><span>fizetve</span></div><div class="stat"><b id="openCount">0</b><span>nyitott</span></div></div>
     </div>
-    <div class="grid">
-      <div class="tile" onclick="openCategory('rezsi')"><div class="ico">🏠</div><div><b>Otthoni rezsi</b><span>Víz, gáz, áram, internet…</span></div></div>
-      <div class="tile" onclick="openCategory('tmobile')"><div class="ico">📱</div><div><b>T-Mobile</b><span>Telefon számla és részletek</span></div></div>
-      <div class="tile" onclick="openCategory('auto')"><div class="ico">🚗</div><div><b>Autó</b><span>Számlák és költségek</span></div></div>
-      <div class="tile" onclick="openCategory('motor')"><div class="ico">🏍️</div><div><b>Motor</b><span>Számlák és költségek</span></div></div>
+    <button class="secondary" style="width:100%;margin-bottom:14px" onclick="showHistory()">📚 Korábbi évek / Előzmények</button><div class="grid">
+      <div class="tile" onclick="openCategory('rezsi')"><div class="ico">🏠</div><div><b>Otthoni rezsi</b><span>Víz, gáz, áram, internet…</span><strong class="tileTotal" id="tile-rezsi"></strong></div></div>
+      <div class="tile" onclick="openCategory('tmobile')"><div class="ico">📱</div><div><b>T-Mobile</b><span>Telefon számla és részletek</span><strong class="tileTotal" id="tile-tmobile"></strong></div></div>
+      <div class="tile" onclick="openCategory('auto')"><div class="ico">🚗</div><div><b>Autó</b><span>Számlák és költségek</span><strong class="tileTotal" id="tile-auto"></strong></div></div>
+      <div class="tile" onclick="openCategory('motor')"><div class="ico">🏍️</div><div><b>Motor</b><span>Számlák és költségek</span><strong class="tileTotal" id="tile-motor"></strong></div></div>
     </div>
   </div>
 
-  <div id="category" class="screen">
+  <div id="history" class="screen">
+  <div class="top"><button class="back" onclick="show('home')">‹ Vissza</button><div class="title" style="font-size:23px">Előzmények</div></div>
+  <div class="field" style="margin-bottom:14px"><label>Év</label><select id="historyYear" onchange="renderHistory()"></select></div>
+  <div id="historySummary" class="miniSummary"></div>
+  <div id="historyList" class="list"></div>
+</div>
+
+<div id="category" class="screen">
     <div class="top"><button class="back" onclick="show('home')">‹ Vissza</button><div id="catTitle" class="title" style="font-size:23px"></div></div>
     <div id="catExtra"></div>
     <div class="section">Számlák</div><div id="billList" class="list"></div>
@@ -67,8 +74,63 @@ const names={rezsi:'🏠 Otthoni rezsi',tmobile:'📱 T-Mobile',auto:'🚗 Autó
 const fmt=n=>new Intl.NumberFormat('hu-HU').format(Math.round(Number(n)||0))+' Ft';
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active'); if(id==='home')renderHome();}
 function openCategory(c){current=c;show('category');renderCategory();}
-function renderHome(){const now=new Date(), m=now.getMonth(),y=now.getFullYear(); document.getElementById('monthLabel').textContent=now.toLocaleDateString('hu-HU',{year:'numeric',month:'long'}); const x=bills.filter(b=>{let d=new Date(b.due||b.date);return d.getMonth()===m&&d.getFullYear()===y}); let total=x.reduce((s,b)=>s+Number(b.share||b.amount||0),0);document.getElementById('total').textContent=fmt(total);document.getElementById('count').textContent=x.length;document.getElementById('paidCount').textContent=x.filter(b=>b.paid).length;document.getElementById('openCount').textContent=x.filter(b=>!b.paid).length;}
-function renderCategory(){document.getElementById('catTitle').textContent=names[current];let arr=bills.filter(b=>b.cat===current);let extra=''; if(current==='tmobile')extra='<div class="detail"><div class="detailline"><span>Telefon</span><b>'+fmt(arr.reduce((s,b)=>s+Number(b.amount||0),0))+'</b></div><div class="detailline"><span>Részletfizetés</span><span>A számlákhoz menthető</span></div></div>';document.getElementById('catExtra').innerHTML=extra;document.getElementById('billList').innerHTML=arr.length?arr.slice().reverse().map(b=>`<div class="bill"><div class="row"><div><div class="amount">${fmt(b.amount)}</div>${Number(b.share||b.amount)!==Number(b.amount)?`<div class="sub" style="margin-top:4px"><b>Mi részünk: ${fmt(b.share)}</b></div>`:''}<div class="sub" style="margin-top:6px">${esc(b.name||'Számla')} · ${b.due||'Nincs határidő'}</div></div><span class="pill ${b.paid?'paid':'due'}">${b.paid?'Fizetve':'Nincs fizetve'}</span></div>${b.device?`<div class="sub" style="margin-top:9px">📱 ${esc(b.device)} · ${b.remaining||0} részlet hátra</div>`:''}${b.photo?`<img src="${b.photo}" style="width:100%;max-height:180px;object-fit:contain;margin-top:12px;border-radius:12px">`:''}</div>`).join(''):'<div class="sub">Még nincs felvitt számla.</div>';}
+
+function showHistory(){
+ show('history');
+ const years=[...new Set(bills.map(b=>billDate(b).getFullYear()))].sort((a,b)=>b-a);
+ const now=new Date().getFullYear();
+ if(!years.includes(now)) years.unshift(now);
+ document.getElementById('historyYear').innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
+ renderHistory();
+}
+function renderHistory(){
+ const y=Number(document.getElementById('historyYear').value);
+ const arr=bills.filter(b=>billDate(b).getFullYear()===y);
+ const total=arr.reduce((s,b)=>s+billValue(b),0);
+ document.getElementById('historySummary').innerHTML=
+   `<div class="miniCard"><span class="sub">${y}. évi összesen</span><b>${fmt(total)}</b></div>
+    <div class="miniCard"><span class="sub">Számlák</span><b>${arr.length}</b></div>`;
+ const months=Array.from({length:12},(_,m)=>arr.filter(b=>billDate(b).getMonth()===m));
+ document.getElementById('historyList').innerHTML=months.map((a,m)=>{
+   const sum=a.reduce((s,b)=>s+billValue(b),0);
+   return `<div class="bill"><div class="row"><b>${new Date(y,m,1).toLocaleDateString('hu-HU',{month:'long'})}</b><b>${fmt(sum)}</b></div><div class="sub" style="margin-top:7px">${a.length} számla</div></div>`;
+ }).join('');
+}
+
+function billValue(b){return Number(b.share||b.amount||0)}
+function billDate(b){return new Date(b.due||b.date)}
+function renderHome(){
+ const now=new Date(), m=now.getMonth(), y=now.getFullYear();
+ document.getElementById('monthLabel').textContent=now.toLocaleDateString('hu-HU',{year:'numeric',month:'long'});
+ const month=bills.filter(b=>{let d=billDate(b);return d.getMonth()===m&&d.getFullYear()===y});
+ const year=bills.filter(b=>billDate(b).getFullYear()===y);
+ const total=month.reduce((s,b)=>s+billValue(b),0), yt=year.reduce((s,b)=>s+billValue(b),0);
+ document.getElementById('total').textContent=fmt(total);
+ document.getElementById('yearTotal').textContent=fmt(yt);
+ document.getElementById('count').textContent=month.length;
+ document.getElementById('paidCount').textContent=month.filter(b=>b.paid).length;
+ document.getElementById('openCount').textContent=month.filter(b=>!b.paid).length;
+ document.getElementById('catCount').textContent=Object.keys(names).length;
+ Object.keys(names).forEach(c=>{
+   const mt=month.filter(b=>b.cat===c).reduce((s,b)=>s+billValue(b),0);
+   const el=document.getElementById('tile-'+c); if(el) el.textContent=mt?('Havi: '+fmt(mt)):'Havi: 0 Ft';
+ });
+}
+function renderCategory(){
+ const now=new Date(),m=now.getMonth(),y=now.getFullYear();
+ document.getElementById('catTitle').textContent=names[current];
+ const arr=bills.filter(b=>b.cat===current);
+ const month=arr.filter(b=>{let d=billDate(b);return d.getMonth()===m&&d.getFullYear()===y});
+ const year=arr.filter(b=>billDate(b).getFullYear()===y);
+ const mt=month.reduce((s,b)=>s+billValue(b),0), yt=year.reduce((s,b)=>s+billValue(b),0);
+ document.getElementById('catSummary').innerHTML=
+   `<div class="miniCard"><span class="sub">${now.toLocaleDateString('hu-HU',{month:'long'})} költés</span><b>${fmt(mt)}</b></div>
+    <div class="miniCard"><span class="sub">${y}. évi összesítés</span><b>${fmt(yt)}</b></div>`;
+ let extra='';
+ if(current==='tmobile') extra='<div class="detail"><div class="detailline"><span>Telefon</span><b>'+fmt(arr.reduce((s,b)=>s+Number(b.amount||0),0))+'</b></div><div class="detailline"><span>Részletfizetés</span><span>A számlákhoz menthető</span></div></div>';
+ document.getElementById('catExtra').innerHTML=extra;
+ document.getElementById('billList').innerHTML=arr.length?arr.slice().reverse().map(b=>`<div class="bill"><div class="row"><div><div class="amount">${fmt(b.amount)}</div>${Number(b.share||b.amount)!==Number(b.amount)?`<div class="sub" style="margin-top:4px"><b>Mi részünk: ${fmt(b.share)}</b></div>`:''}<div class="sub" style="margin-top:6px">${esc(b.name||'Számla')} · ${b.due||'Nincs határidő'}</div></div><span class="pill ${b.paid?'paid':'due'}">${b.paid?'Fizetve':'Nincs fizetve'}</span></div>${b.device?`<div class="sub" style="margin-top:9px">📱 ${esc(b.device)} · ${b.remaining||0} részlet hátra</div>`:''}${b.photo?`<img src="${b.photo}" style="width:100%;max-height:180px;object-fit:contain;margin-top:12px;border-radius:12px">`:''}</div>`).join(''):'<div class="sub">Még nincs felvitt számla.</div>';
+}
 function showAdd(){show('add');document.getElementById('fcat').value=current;toggleTmobile();document.getElementById('fdue').value=new Date().toISOString().slice(0,10);}
 function toggleTmobile(){let t=document.getElementById('fcat').value==='tmobile';document.getElementById('tmobileFields').style.display=t?'block':'none';document.getElementById('shareField').style.display=t?'none':'flex';}
 document.getElementById('fphoto').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>document.getElementById('preview').innerHTML='<img src="'+r.result+'">';r.readAsDataURL(f);});
