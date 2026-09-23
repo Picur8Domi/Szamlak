@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101214">
+<title>Számláim</title>
+<style>
+:root{--bg:#101214;--card:#191c20;--card2:#20242a;--text:#f4f5f6;--muted:#9da4ad;--accent:#d9b36c;--ok:#78c58a;--danger:#e27d7d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+.app{max-width:520px;margin:auto;padding:18px 16px 90px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.title{font-size:30px;font-weight:750}.sub{color:var(--muted);font-size:14px;margin-top:3px}.summary{background:linear-gradient(135deg,#24282e,#171a1e);border:1px solid #30353c;border-radius:24px;padding:20px;margin-bottom:18px}.summary .big{font-size:34px;font-weight:800;margin:6px 0}.stats{display:flex;gap:8px}.stat{flex:1;background:#11131699;border-radius:15px;padding:11px}.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{border:1px solid #30343a;background:var(--card);border-radius:22px;padding:18px;min-height:138px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}.ico{font-size:32px}.tile b{font-size:17px}.tile span{font-size:12px;color:var(--muted)}
+.back{background:var(--card);border:1px solid #30343a;color:var(--text);border-radius:12px;padding:9px 12px}.row{display:flex;justify-content:space-between;align-items:center}.list{display:flex;flex-direction:column;gap:10px}.bill{background:var(--card);border:1px solid #30343a;border-radius:18px;padding:15px}.bill .amount{font-size:21px;font-weight:750}.pill{font-size:11px;border-radius:99px;padding:5px 8px;background:#2a3035;color:var(--muted)}.paid{background:#203526;color:var(--ok)}.due{background:#3a2929;color:#ffb1b1}
+button{font:inherit}.fab{position:fixed;right:20px;bottom:22px;width:58px;height:58px;border:0;border-radius:50%;background:var(--accent);color:#151515;font-size:30px;box-shadow:0 8px 25px #0008}.screen{display:none}.screen.active{display:block}
+form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:var(--muted)}input,select,textarea{width:100%;padding:13px;border-radius:13px;border:1px solid #363b42;background:#15181b;color:var(--text);font:inherit}textarea{min-height:80px}.primary{padding:14px;border:0;border-radius:14px;background:var(--accent);color:#171717;font-weight:750}.secondary{padding:13px;border:1px solid #3a3f46;border-radius:14px;background:var(--card);color:var(--text)}
+.photo{border:1px dashed #515862;border-radius:16px;padding:18px;text-align:center;color:var(--muted)}.photo img{max-width:100%;max-height:220px;border-radius:12px;margin-top:10px}
+.section{margin:18px 0 10px;font-size:14px;color:var(--muted)}
+.detail{background:var(--card);border-radius:20px;padding:18px;border:1px solid #30343a}.detailline{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #2a2e34}.detailline:last-child{border-bottom:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="home" class="screen active">
+    <div class="top"><div><div class="title">Számláim</div><div class="sub" id="monthLabel"></div></div></div>
+    <div class="summary"><div class="sub">Ebben a hónapban</div><div class="big" id="total">0 Ft</div>
+      <div class="stats"><div class="stat"><b id="count">0</b><span>számla</span></div><div class="stat"><b id="paidCount">0</b><span>fizetve</span></div><div class="stat"><b id="openCount">0</b><span>nyitott</span></div></div>
+    </div>
+    <div class="grid">
+      <div class="tile" onclick="openCategory('rezsi')"><div class="ico">🏠</div><div><b>Otthoni rezsi</b><span>Víz, gáz, áram, internet…</span></div></div>
+      <div class="tile" onclick="openCategory('tmobile')"><div class="ico">📱</div><div><b>T-Mobile</b><span>Telefon számla és részletek</span></div></div>
+      <div class="tile" onclick="openCategory('auto')"><div class="ico">🚗</div><div><b>Autó</b><span>Számlák és költségek</span></div></div>
+      <div class="tile" onclick="openCategory('motor')"><div class="ico">🏍️</div><div><b>Motor</b><span>Számlák és költségek</span></div></div>
+    </div>
+  </div>
+
+  <div id="category" class="screen">
+    <div class="top"><button class="back" onclick="show('home')">‹ Vissza</button><div id="catTitle" class="title" style="font-size:23px"></div></div>
+    <div id="catExtra"></div>
+    <div class="section">Számlák</div><div id="billList" class="list"></div>
+    <button class="fab" onclick="showAdd()">+</button>
+  </div>
+
+  <div id="add" class="screen">
+    <div class="top"><button class="back" onclick="show('category')">‹ Vissza</button><div class="title" style="font-size:23px">Új számla</div></div>
+    <form onsubmit="saveBill(event)">
+      <div class="field"><label>Kategória</label><select id="fcat" onchange="toggleTmobile()"><option value="rezsi">🏠 Otthoni rezsi</option><option value="tmobile">📱 T-Mobile</option><option value="auto">🚗 Autó</option><option value="motor">🏍️ Motor</option></select></div>
+      <div class="field"><label>Szolgáltató / megnevezés</label><input id="fname" placeholder="pl. MVM, Telekom, szerviz"></div>
+      <div class="field"><label>Teljes számla összege</label><input id="famount" type="number" min="0" step="1" placeholder="Ft" required></div>
+      <div id="shareField" class="field"><label>Mi részünk (közös számla esetén)</label><input id="fshare" type="number" min="0" step="1" placeholder="Ha üres, a teljes összeg"></div>
+      <div class="field"><label>Fizetési határidő</label><input id="fdue" type="date"></div>
+      <div class="field"><label>Fizetve?</label><select id="fpaid"><option value="no">Nem</option><option value="yes">Igen</option></select></div>
+      <div id="tmobileFields" style="display:none">
+        <div class="section">Telefon részletek</div>
+        <div class="field"><label>Készülék</label><input id="fdevice" placeholder="pl. iPhone"></div>
+        <div class="field"><label>Havi részlet</label><input id="finstallment" type="number" min="0" step="1" placeholder="Ft"></div>
+        <div class="field"><label>Hátralévő részletek</label><input id="fremaining" type="number" min="0" step="1" placeholder="db"></div>
+      </div>
+      <div class="field"><label>Számla fotója</label><div class="photo"><input id="fphoto" type="file" accept="image/*" capture="environment"><div id="preview"></div></div></div>
+      <div class="field"><label>Megjegyzés</label><textarea id="fnote" placeholder="Opcionális"></textarea></div>
+      <button class="primary">Mentés</button>
+    </form>
+  </div>
+</div>
+<script>
+const KEY='szamlak_v2'; let bills=JSON.parse(localStorage.getItem(KEY)||'[]'); let current='rezsi';
+const names={rezsi:'🏠 Otthoni rezsi',tmobile:'📱 T-Mobile',auto:'🚗 Autó',motor:'🏍️ Motor'};
+const fmt=n=>new Intl.NumberFormat('hu-HU').format(Math.round(Number(n)||0))+' Ft';
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active'); if(id==='home')renderHome();}
+function openCategory(c){current=c;show('category');renderCategory();}
+function renderHome(){const now=new Date(), m=now.getMonth(),y=now.getFullYear(); document.getElementById('monthLabel').textContent=now.toLocaleDateString('hu-HU',{year:'numeric',month:'long'}); const x=bills.filter(b=>{let d=new Date(b.due||b.date);return d.getMonth()===m&&d.getFullYear()===y}); let total=x.reduce((s,b)=>s+Number(b.share||b.amount||0),0);document.getElementById('total').textContent=fmt(total);document.getElementById('count').textContent=x.length;document.getElementById('paidCount').textContent=x.filter(b=>b.paid).length;document.getElementById('openCount').textContent=x.filter(b=>!b.paid).length;}
+function renderCategory(){document.getElementById('catTitle').textContent=names[current];let arr=bills.filter(b=>b.cat===current);let extra=''; if(current==='tmobile')extra='<div class="detail"><div class="detailline"><span>Telefon</span><b>'+fmt(arr.reduce((s,b)=>s+Number(b.amount||0),0))+'</b></div><div class="detailline"><span>Részletfizetés</span><span>A számlákhoz menthető</span></div></div>';document.getElementById('catExtra').innerHTML=extra;document.getElementById('billList').innerHTML=arr.length?arr.slice().reverse().map(b=>`<div class="bill"><div class="row"><div><div class="amount">${fmt(b.share||b.amount)}</div><div class="sub">${esc(b.name||'Számla')} · ${b.due||'Nincs határidő'}</div></div><span class="pill ${b.paid?'paid':'due'}">${b.paid?'Fizetve':'Nincs fizetve'}</span></div>${b.device?`<div class="sub" style="margin-top:9px">📱 ${esc(b.device)} · ${b.remaining||0} részlet hátra</div>`:''}${b.photo?`<img src="${b.photo}" style="width:100%;max-height:180px;object-fit:contain;margin-top:12px;border-radius:12px">`:''}</div>`).join(''):'<div class="sub">Még nincs felvitt számla.</div>';}
+function showAdd(){show('add');document.getElementById('fcat').value=current;toggleTmobile();document.getElementById('fdue').value=new Date().toISOString().slice(0,10);}
+function toggleTmobile(){let t=document.getElementById('fcat').value==='tmobile';document.getElementById('tmobileFields').style.display=t?'block':'none';document.getElementById('shareField').style.display=t?'none':'flex';}
+document.getElementById('fphoto').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>document.getElementById('preview').innerHTML='<img src="'+r.result+'">';r.readAsDataURL(f);});
+function saveBill(e){e.preventDefault();let photo=document.getElementById('fphoto').files[0];let finish=src=>{bills.push({cat:fcat.value,name:fname.value,amount:Number(famount.value),share:fshare.value?Number(fshare.value):Number(famount.value),due:fdue.value,paid:fpaid.value==='yes',device:fdevice.value,installment:Number(finstallment.value||0),remaining:Number(fremaining.value||0),note:fnote.value,photo:src||'',date:new Date().toISOString()});localStorage.setItem(KEY,JSON.stringify(bills));openCategory(fcat.value);};if(photo){let r=new FileReader();r.onload=()=>finish(r.result);r.readAsDataURL(photo)}else finish('');}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+renderHome();
+</script>
+</body></html>
