@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#0f1213"/><rect x="132" y="90" width="248" height="332" rx="32" fill="#202628" stroke="#d8b56a" stroke-width="12"/><path d="M180 170h150M180 230h150M180 290h105" stroke="#f5f3ee" stroke-width="22" stroke-linecap="round"/><circle cx="330" cy="350" r="28" fill="#d8b56a"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="96" fill="#0b0b0b"/>
+<text x="256" y="250" text-anchor="middle"
+      font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif"
+      font-size="118" font-weight="800" letter-spacing="4" fill="#fff">DD13</text>
+<rect x="105" y="285" width="302" height="3" rx="1.5" fill="#fff" opacity=".85"/>
+<text x="256" y="355" text-anchor="middle"
+      font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif"
+      font-size="54" font-weight="600" letter-spacing="8" fill="#fff">HOME</text>
+</svg>
