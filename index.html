@@ -24,7 +24,7 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
 <body>
 <div class="app">
   <div id="home" class="screen active">
-    <div class="top"><div style="display:flex;align-items:center;gap:12px"><img src="icon.svg" alt="DD13 HOME" style="width:48px;height:48px;border-radius:12px"><div><div class="title">Számláim <span style="font-size:10px;color:#888">v8</span></div><div class="sub" id="monthLabel"></div></div></div></div>
+    <div class="top"><div style="display:flex;align-items:center;gap:12px"><img src="icon.svg" alt="DD13 HOME" style="width:48px;height:48px;border-radius:12px"><div><div class="title">Számláim <span style="font-size:10px;color:#888">v13</span></div><div class="sub" id="monthLabel"></div></div></div></div>
     <div class="summary"><div class="sub">Ebben a hónapban</div><div class="big" id="total">0 Ft</div>
       <div class="miniSummary"><div class="miniCard"><span class="sub">2026 éves összesítés</span><b id="yearTotal">0 Ft</b></div><div class="miniCard"><span class="sub">Kategóriák</span><b id="catCount">4</b></div></div><div class="stats"><div class="stat"><b id="count">0</b><span>számla</span></div><div class="stat"><b id="paidCount">0</b><span>fizetve</span></div><div class="stat"><b id="openCount">0</b><span>nyitott</span></div></div>
     </div>
@@ -33,6 +33,7 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
       <div class="tile" onclick="openCategory('tmobile')"><div class="ico">📱</div><div><b>T-Mobile</b><span>Telefon számla és részletek</span><strong class="tileTotal" id="tile-tmobile"></strong></div></div>
       <div class="tile" onclick="openCategory('auto')"><div class="ico">🚗</div><div><b>Autó</b><span>Számlák és költségek</span><strong class="tileTotal" id="tile-auto"></strong></div></div>
       <div class="tile" onclick="openCategory('motor')"><div class="ico">🏍️</div><div><b>Motor</b><span>Számlák és költségek</span><strong class="tileTotal" id="tile-motor"></strong></div></div>
+      <div class="tile" onclick="openCategory('orvos')"><div class="ico">🩺</div><div><b>Orvos</b><span>Orvosi számlák és költségek</span><strong class="tileTotal" id="tile-orvos"></strong></div></div>
     </div>
   </div>
 
@@ -54,7 +55,7 @@ form{display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direct
   <div id="add" class="screen">
     <div class="top"><button class="back" onclick="show('category')">‹ Vissza</button><div class="title" style="font-size:23px">Új számla</div></div>
     <form autocomplete="new-password" onsubmit="saveBill(event)">
-      <div class="field"><label>Kategória</label><select id="fcat" onchange="toggleTmobile()"><option value="rezsi">🏠 Otthoni rezsi</option><option value="tmobile">📱 T-Mobile</option><option value="auto">🚗 Autó</option><option value="motor">🏍️ Motor</option></select></div>
+      <div class="field"><label>Kategória</label><select id="fcat" onchange="toggleTmobile()"><option value="rezsi">🏠 Otthoni rezsi</option><option value="tmobile">📱 T-Mobile</option><option value="auto">🚗 Autó</option><option value="motor">🏍️ Motor</option><option value="orvos">🩺 Orvos</option></select></div>
       <div class="field"><label>Szolgáltató / megnevezés</label><input id="fname" name="dd13_name" autocomplete="new-password" placeholder="pl. MVM, Telekom, szerviz"></div>
       <div class="field"><label>Teljes számla összege</label><input id="famount" name="dd13_amount" autocomplete="new-password" type="number" min="0" step="1" placeholder="Ft" required></div>
       <div id="shareField" class="field"><label>Mi részünk (közös számla esetén)</label><input id="fshare" name="dd13_share" autocomplete="new-password" type="number" min="0" step="1" placeholder="Ha üres, a teljes összeg"></div>
@@ -78,7 +79,7 @@ const DB_NAME='dd13_home_db';
 const DB_VERSION=1;
 const STORE='bills';
 let bills=[]; let current='rezsi'; let db=null;
-const names={rezsi:'🏠 Otthoni rezsi',tmobile:'📱 T-Mobile',auto:'🚗 Autó',motor:'🏍️ Motor'};
+const names={rezsi:'🏠 Otthoni rezsi',tmobile:'📱 T-Mobile',auto:'🚗 Autó',motor:'🏍️ Motor',orvos:'🩺 Orvos'};
 const fmt=n=>new Intl.NumberFormat('hu-HU').format(Math.round(Number(n)||0))+' Ft';
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); const el=document.getElementById(id); if(el) el.classList.add('active'); if(id==='home')renderHome();}
 function openCategory(c){current=c;show('category');renderCategory();}
